@@ -1,37 +1,93 @@
 <html>
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background-color: #f0f2f5;
+      }
+      #input {
+        padding: 10px;
+        width: 300px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        margin-bottom: 15px;
+      }
+      button {
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      #result {
+        margin-top: 30px;
+        width: 80%;
+        max-width: 600px;
+        text-align: center;
+      }
+      .spinner {
+        border: 6px solid #f3f3f3;
+        border-top: 6px solid #4CAF50;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
   <body>
-    <input id="input" type="text">
-    <button onclick="getNews()">Generate news</button>
-    <div id="result">
+    <input id="input" type="text" placeholder="Enter news topic (sports, politics, stocks etc.)" />
+    <button onclick="getNews()">Generate News</button>
+    <div id="result"></div>
 
-    </div>
     <script>
-        const input = document.getElementById("input");
+      const input = document.getElementById("input");
+      const resultDiv = document.getElementById("result");
+
       async function getNews() {
-        const API_KEY =
-          "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";
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "post",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + API_KEY,
-          },
-          body: JSON.stringify({
-            model: "llama-3.3-70b-versatile",
-            messages: [
-              {
-                role: "user",
-                content: "Generate news on topic"+ input.value +" in div tag with css no html and body tag",
-              },
-            ],
-          }),
-        });
-        const body = await response.json();
-        console.log(body);
-        const newDiv = document.createElement('div');
-        newDiv.innerHTML = body.choices[0].message.content;
-        document.getElementById('result').appendChild(newDiv)
-        
+        resultDiv.innerHTML = '<div class="spinner"></div>'; // Show loading spinner
+        const API_KEY = "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";
+        try {
+          const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "post",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + API_KEY,
+            },
+            body: JSON.stringify({
+              model: "llama-3.3-70b-versatile",
+              messages: [
+                {
+                  role: "user",
+                  content: "Generate news on topic " + input.value + " in div tag with css only, no html or body tag",
+                },
+              ],
+            }),
+          });
+          const body = await response.json();
+          console.log(body);
+          resultDiv.innerHTML = ""; // Clear spinner
+          const newDiv = document.createElement('div');
+          newDiv.innerHTML = body.choices[0].message.content;
+          resultDiv.appendChild(newDiv);
+        } catch (err) {
+          resultDiv.innerHTML = "<p>Something went wrong. Please try again.</p>";
+        }
       }
     </script>
   </body>
